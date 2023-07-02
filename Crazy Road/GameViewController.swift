@@ -52,16 +52,16 @@ class GameViewController: UIViewController {
     
     //MARK: - Game Setup
     private func setupGame() {
-        self.game = Game(gameState: .menu, gameScore: 0, gameHUD: GameHUD(size: self.sceneView.bounds.size, isMenu: true))
-        setupHUD(isMenu: true)
+        self.game = Game(gameState: .menu, gameScore: 0, gameHUD: GameHUD(size: self.sceneView.bounds.size, state: .menu))
+        setupHUD(state: .menu)
     }
     
     //MARK: - HUD Setup
-    private func setupHUD(isMenu : Bool) {
-        self.game.gameHUD = GameHUD(size: self.sceneView.bounds.size, isMenu: isMenu)
+    private func setupHUD(state : GameState) {
+        self.game.gameHUD = GameHUD(size: self.sceneView.bounds.size, state: state)
         self.sceneView.overlaySKScene = self.game.gameHUD
         self.sceneView.overlaySKScene?.isUserInteractionEnabled = false
-        self.game.gameState = isMenu ? .menu : .playing
+        self.game.gameState = state
     }
     
     //MARK: - Map Setup
@@ -135,9 +135,9 @@ extension GameViewController : SCNPhysicsContactDelegate {
         
         switch bitMask {
         case Utils.chickenBitMask | Utils.vehicleBitMask:
-            // Restart Game
+            self.playerNode.die()
             DispatchQueue.main.async {
-                self.initialise()
+                self.setupHUD(state: .over)
             }
         case Utils.frontTestBitMask | Utils.vegetationBitMask:
             self.gameController.isFrontBlocked = true
@@ -146,17 +146,17 @@ extension GameViewController : SCNPhysicsContactDelegate {
         case Utils.leftTestBitMask | Utils.vegetationBitMask:
             self.gameController.isLeftBlocked = true
         case Utils.coinBitMask | Utils.chickenBitMask:
-            print("GOT COIN")
             for lane in self.mapNode.lanes {
                 // Get the lane that the user is on
                 if Int(lane.position.z) == Int(self.playerNode.position.z) {
                     // If the lane contains
                     if lane.childNodes.contains(lane.coinNode) {
                         // Remove coin from lane
-                        print("REMOVING COIN")
                         lane.coinNode.removeFromParentNode()
                         // Update Score
-                        self.game.updateScore(5)
+                        // 5 points should be added, but since the player gets a point
+                        // when jumping forward, we only add 4
+                        self.game.updateScore(4)
                     }
                 }
             }
@@ -173,9 +173,14 @@ extension GameViewController {
             // Set up the game controller
             self.setupGameController()
             // Change the game HUD
-            self.setupHUD(isMenu: false)
+            self.setupHUD(state: .playing)
         case .playing:
             break
+        case .over:
+            // Restart Game
+            DispatchQueue.main.async {
+                self.initialise()
+            }
         }
     }
 }

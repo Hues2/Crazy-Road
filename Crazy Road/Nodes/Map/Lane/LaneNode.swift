@@ -77,13 +77,13 @@ class LaneNode: SCNNode {
         for index in 0..<Int(laneLength) {
             switch type {
             case .grass:
-                if Utils.shared.randomBool(odds: 4) {
+                if Utils.shared.randomBool(odds: 5) {
                     self.addVegetation(laneNode, index)
                 }
             case .road:
                 guard let trafficNode else { continue }
                 // Add or don't add the coin at this tile
-                if Utils.shared.randomBool(odds: 3) && !coinIsAdded {
+                if Utils.shared.randomBool(odds: 4) && !coinIsAdded {
                     coinIsAdded = true
                     addCoin(index)
                 }
@@ -113,6 +113,7 @@ class LaneNode: SCNNode {
     }
     
     private func addCoin(_ index : Int) {
+        // Don't clone the coin because we only ever add one per road lane
         coinNode.position = SCNVector3(x: 10 - Float(index), y: 0, z: 0)
         coinNode.eulerAngles = SCNVector3(x: 0, y: Utils.shared.toRadians(angle: 0), z: 0)
         let turn1 = SCNAction.rotateTo(x: 0, y: Utils.shared.toRadians(angle: 90), z: 0, duration: 1, usesShortestUnitArc: false)

@@ -1,7 +1,7 @@
 import Foundation
 
 enum GameState {
-    case menu, playing
+    case menu, playing, over
 }
 
 class Game {

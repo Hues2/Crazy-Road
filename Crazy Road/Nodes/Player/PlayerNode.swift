@@ -3,6 +3,7 @@ import SceneKit
 class PlayerNode: SCNNode {
     var chickenNode : SCNNode
     var collisionNode : CollisionNode
+    var isDead = false
     
     override init() {
         chickenNode = SCNNode()
@@ -29,5 +30,17 @@ class PlayerNode: SCNNode {
         self.chickenNode = chicken
         // Add chicken node to player node
         addChildNode(self.chickenNode)
+    }
+    
+    func die() {
+        if !isDead {
+            let jumpUp = SCNAction.moveBy(x: 0, y: 1, z: 0, duration: 0.1)
+            let jumpDown = SCNAction.moveBy(x: 0, y: -1, z: 0, duration: 0.1)
+            let jump = SCNAction.sequence([jumpUp, jumpDown])
+            let rotate = SCNAction.rotateTo(x: 0, y: 0, z: Utils.shared.toRadians(angle: 90), duration: 0.2)
+            let dieAction = SCNAction.group([jump, rotate])
+            runAction(dieAction)
+            isDead = true
+        }
     }
 }
